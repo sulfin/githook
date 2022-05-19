@@ -1,0 +1,9 @@
+[default]
+address = "0.0.0.0"
+limits = { form = "0 B", json = "20 kB"}
+
+[debug]
+port = 8000
+
+[release]
+port = 80

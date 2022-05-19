@@ -25,9 +25,11 @@ RUN cargo build --release
 
 
 FROM debian:10.12
+WORKDIR /app
 
-COPY --from=builder /app/target/release/githook /app/githook
-RUN mkdir /app/updates
-USER 1000
+COPY --from=builder /app/target/release/githook ./githook
+COPY Rocket.toml Rocket.toml
+RUN mkdir updates
+
 
 CMD [ "/app/githook" ]

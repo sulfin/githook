@@ -1,8 +1,6 @@
 FROM rust:1.60.0 AS builder
 WORKDIR /usr/src
 
-# Ajout de musl pour une image light
-RUN rustup target add x86_64-unknown-linux-musl
 
 RUN USER=root cargo new githook
 WORKDIR /usr/src/githook
@@ -11,15 +9,14 @@ RUN cargo build --release
 
 
 COPY ./src ./src
-RUN cargo install --target x86_64-unknown-linux-musl --path .
-RUN mkdir updates
+RUN cargo build --release
 
 
-FROM scratch
+FROM debian:stretch-slim
 
-COPY --from=builder /usr/local/cargo/bin/githook .
-COPY --from=builder /usr/src/githook/updates .
+COPY --from=builder /usr/src/githook/target/release/githook /app
+RUN mkdir /app/updates
 EXPOSE 8000
 USER 1000
 
-CMD [ "/githook" ]
+CMD [ "/app/githook" ]

@@ -12,12 +12,13 @@ RUN cargo build --release
 
 COPY ./src ./src
 RUN cargo install --target x86_64-unknown-linux-musl --path .
+RUN mkdir updates
 
 
 FROM scratch
 
 COPY --from=builder /usr/local/cargo/bin/githook .
-RUN mkdir /app/githook/updates
+COPY --from=builder /usr/src/githook/updates .
 EXPOSE 8000
 USER 1000
 

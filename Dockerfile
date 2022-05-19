@@ -1,22 +1,33 @@
+# Stage 1 - generate recipe for dependencies
+FROM rust:1.60.0 AS planner
+WORKDIR /app
+RUN cargo install cargo-chef
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+# Stage 2 - build dependencies
+FROM rust:1.60.0 AS cacher
+WORKDIR /app
+RUN cargo install cargo-chef
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+
+# Stage 3 - build app
 FROM rust:1.60.0 AS builder
-WORKDIR /usr/src
+WORKDIR /app
+COPY . .
 
+COPY --from=cacher /app/target target
+COPY --from=cacher /usr/local/cargo /usr/local/cargo 
 
-RUN USER=root cargo new githook
-WORKDIR /usr/src/githook
-COPY Cargo.lock Cargo.toml ./
+#build the app
 RUN cargo build --release
 
 
-COPY ./src ./src
-RUN cargo build --release
+FROM debian:10.12
 
-
-FROM debian:stretch-slim
-
-COPY --from=builder /usr/src/githook/target/release/githook /app
+COPY --from=builder /app/target/release/githook /app/githook
 RUN mkdir /app/updates
-EXPOSE 8000
 USER 1000
 
 CMD [ "/app/githook" ]

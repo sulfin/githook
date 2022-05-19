@@ -1,6 +1,7 @@
 FROM rust:1.60.0 AS builder
 WORKDIR /usr/src/app
 
+RUN rustup target add x86_64-unknown-linux-gnu
 COPY Cargo.lock Cargo.toml ./
 RUN cargo build --release
 
